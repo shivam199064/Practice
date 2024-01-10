@@ -1,0 +1,84 @@
+#!/bin/bash
+
+#  version 
+VERSION="v0.1.0"
+
+# manual page
+MAN_PAGE="internsctl.1"
+
+#  help message
+help_message() {
+    man ./"$MAN_PAGE"  # Display the manual page
+}
+
+# main function
+main() {
+    case "$1" in
+        -h | --help)
+            help_message
+            ;;
+        -v | --version)
+            echo "internsctl $VERSION"
+            ;;
+        -g | --greet)
+            echo "Hello, interns! Welcome to the team."
+            ;;
+        -r | --report)
+            echo "Generating the intern report..."
+            # You can add the logic to generate the report.
+            ;;
+        cpu | memory)
+            case "$2" in
+                getinfo)
+                    if [ "$1" == "cpu" ]; then
+                        lscpu  # Running the lscpu command for CPU information
+                    elif [ "$1" == "memory" ]; then
+                        free -m  # Running the free command for memory information
+                    fi
+                    ;;
+                *)
+                    echo "Invalid subcommand. Use 'internsctl --help' for usage instructions."
+                    ;;
+            esac
+            ;;
+        file)
+            case "$2" in
+                getinfo)
+                    if [ -n "$3" ]; then
+                        filename="$3"
+                        if [ -f "$filename" ]; then
+                            if [ "$4" == "--size" ] || [ "$4" == "-s" ]; then
+                                stat -c %s "$filename"  # Gets file size
+                            elif [ "$4" == "--permissions" ] || [ "$4" == "-p" ]; then
+                                stat -c %A "$filename"  # Gets file permissions
+                            elif [ "$4" == "--owner" ] || [ "$4" == "-o" ]; then
+                                stat -c %U "$filename"  # Gets file owner
+                            elif [ "$4" == "--last-modified" ] || [ "$4" == "-m" ]; then
+                                stat -c %y "$filename"  # Gets last modified time
+                            else
+                                echo "Invalid option. Use 'internsctl file getinfo --help' for usage instructions."
+                            fi
+                        else
+                            echo "File does not exist."
+                        fi
+                    else
+                        echo "Please provide a filename. Usage: internsctl file getinfo [options] <file-name>"
+                    fi
+                    ;;
+                *)
+                    echo "Invalid subcommand. Use 'internsctl --help' for usage instructions."
+                    ;;
+            esac
+            ;;
+        *)
+            echo "Invalid option. Use 'internsctl --help' for usage instructions."
+            ;;
+    esac
+}
+
+# Checking if any arguments are provided
+if [ $# -eq 0 ]; then
+    help_message
+else
+    main "$1" "$2" "$3" "$4"
+fi
